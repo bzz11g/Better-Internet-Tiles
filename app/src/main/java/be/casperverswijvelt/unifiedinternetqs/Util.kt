@@ -16,10 +16,8 @@ import android.telephony.TelephonyManager
 import android.util.Log
 import be.casperverswijvelt.unifiedinternetqs.ui.MainActivity
 import rikka.shizuku.Shizuku
-import be.casperverswijvelt.unifiedinternetqs.ui.ShizukuUtils
+import be.casperverswijvelt.unifiedinternetqs.privileged.ShizukuUtil
 import java.lang.reflect.Method
-import android.text.method.LinkMovementMethod
-import android.widget.TextView
 
 const val TAG = "Util"
 
@@ -27,6 +25,8 @@ fun getDataEnabled(context: Context): Boolean {
 
     val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE)
             as ConnectivityManager
+
+    // TODO use telephonymanager in privileged
 
     var mobileDataEnabled = false
 
@@ -51,7 +51,7 @@ fun getWifiEnabled(context: Context): Boolean {
 
 fun getConnectedWifiSSID(): String? {
 
-    if (ShizukuUtils.hasShizukuPermission()) {
+    if (ShizukuUtil.hasShizukuPermission()) {
         val process = Shizuku.newProcess("dumpsys netstats | grep -E 'iface=wlan.*networkId'".split(' ')
             .toTypedArray(), null, null)
         process.waitFor()
@@ -166,8 +166,8 @@ fun getShizukuAccessRequiredDialog(context: Context): Dialog {
         .setTitle(R.string.shizuku_access_required)
         .setMessage(R.string.shizuku_not_set_up)
         .setPositiveButton(android.R.string.ok) { _, _ ->
-            if (ShizukuUtils.shizukuAvailable) {
-                ShizukuUtils.requestShizukuPermission {  }
+            if (ShizukuUtil.shizukuAvailable) {
+                ShizukuUtil.requestShizukuPermission {  }
             } else {
                 context.startActivity(intent)
             }

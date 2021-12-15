@@ -10,8 +10,8 @@ import be.casperverswijvelt.unifiedinternetqs.*
 import be.casperverswijvelt.unifiedinternetqs.listeners.CellularChangeListener
 import be.casperverswijvelt.unifiedinternetqs.listeners.NetworkChangeCallback
 import be.casperverswijvelt.unifiedinternetqs.listeners.NetworkChangeType
-import rikka.shizuku.Shizuku
-import be.casperverswijvelt.unifiedinternetqs.ui.ShizukuUtils
+import be.casperverswijvelt.unifiedinternetqs.privileged.PrivilegedAPI
+import be.casperverswijvelt.unifiedinternetqs.privileged.ShizukuUtil
 
 class MobileDataTileService : TileService() {
 
@@ -71,7 +71,7 @@ class MobileDataTileService : TileService() {
     override fun onClick() {
         super.onClick()
 
-        if (!ShizukuUtils.hasShizukuPermission()) {
+        if (!ShizukuUtil.hasShizukuPermission()) {
 
             // Shizuku access is needed to enable/disable mobile data and Wi-Fi. There is currently
             //  no other way to do this, so this functionality will not work without Shizuku access.
@@ -98,11 +98,9 @@ class MobileDataTileService : TileService() {
 
         val dataEnabled = getDataEnabled(applicationContext)
 
-        ShizukuUtils.executeCommand(if (dataEnabled) {
-            "svc data disable"
-        } else {
-            "svc data enable"
-        })
+        PrivilegedAPI.getInstance(applicationContext) {
+            it.setMobileDataEnabled(!dataEnabled)
+        }
     }
 
     private fun syncTile() {

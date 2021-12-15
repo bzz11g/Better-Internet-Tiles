@@ -11,8 +11,9 @@ import be.casperverswijvelt.unifiedinternetqs.listeners.CellularChangeListener
 import be.casperverswijvelt.unifiedinternetqs.listeners.NetworkChangeCallback
 import be.casperverswijvelt.unifiedinternetqs.listeners.NetworkChangeType
 import be.casperverswijvelt.unifiedinternetqs.listeners.WifiChangeListener
-import rikka.shizuku.Shizuku
-import be.casperverswijvelt.unifiedinternetqs.ui.ShizukuUtils
+import be.casperverswijvelt.unifiedinternetqs.privileged.PrivilegedAPI
+import be.casperverswijvelt.unifiedinternetqs.privileged.ShizukuUtil
+import org.lsposed.hiddenapibypass.HiddenApiBypass
 
 class InternetTileService : TileService() {
 
@@ -56,6 +57,8 @@ class InternetTileService : TileService() {
         cellularChangeListener = CellularChangeListener(cellularChangeCallback)
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(applicationContext)
+
+        HiddenApiBypass.setHiddenApiExemptions("L")
     }
 
     override fun onStartListening() {
@@ -88,7 +91,7 @@ class InternetTileService : TileService() {
     override fun onClick() {
         super.onClick()
 
-        if (!ShizukuUtils.hasShizukuPermission()) {
+        if (!ShizukuUtil.hasShizukuPermission()) {
 
             // Shizuku access is needed to enable/disable mobile data and Wi-Fi. There is currently
             //  no other way to do this, so this functionality will not work without Shizuku access.
@@ -124,33 +127,24 @@ class InternetTileService : TileService() {
         isTurningOnData = false
         isTurningOnWifi = false
 
-//        println("GET PRIVILEGED")
-//        PrivilegedAPI.getInstance(baseContext) {
-//            // Empty
-//            println("GOT PRIVILEGED")
-//            PrivilegedAPI.peekInstance()?.setWifiEnabled(!wifiEnabled)
-//        }
-//        return
-
-        when {
-            wifiEnabled -> {
-                ShizukuUtils.executeCommand("svc wifi disable")
-                if (ShizukuUtils.executeCommand("svc data enable").exitValue() == 0) {
-                    isTurningOnData = true
+        PrivilegedAPI.getInstance(baseContext) {
+            log("$it")
+            when {
+                wifiEnabled -> {
+                    it.setWifiEnabled(false)
+                    it.setMobileDataEnabled(true)
                 }
-            }
-            dataEnabled -> {
-                ShizukuUtils.executeCommand("svc data disable")
-                if (ShizukuUtils.executeCommand("svc wifi enable").exitValue() == 0) {
-                    isTurningOnWifi = true
+                dataEnabled -> {
+                    it.setWifiEnabled(true)
+                    it.setMobileDataEnabled(false)
                 }
-            }
-            else -> {
-                if (ShizukuUtils.executeCommand("svc wifi enable").exitValue() == 0) {
-                    isTurningOnWifi = true
+                else -> {
+                    it.setWifiEnabled(true)
                 }
             }
         }
+
+
     }
 
     private fun syncTile() {

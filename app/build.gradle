@@ -49,4 +49,9 @@ dependencies {
     def shizuku_version = '12.1.0'
     implementation "dev.rikka.shizuku:api:$shizuku_version"
     implementation "dev.rikka.shizuku:provider:$shizuku_version"
+    implementation 'org.lsposed.hiddenapibypass:hiddenapibypass:3.0'
+//
+//    dependencies {
+//        implementation files('libs/android.jar')
+//    }
 }
