@@ -8,8 +8,11 @@ import android.util.Log
 import android.widget.Toast
 import be.casperverswijvelt.unifiedinternetqs.util.ExecutorServiceSingleton
 import be.casperverswijvelt.unifiedinternetqs.util.ShizukuUtil
-import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.topjohnwu.superuser.Shell
+import org.acra.ACRA
+import org.acra.config.httpSender
+import org.acra.data.StringFormat
+import org.acra.ktx.initAcra
 
 class TileApplication : Application() {
 
@@ -23,6 +26,16 @@ class TileApplication : Application() {
         super.onCreate()
 
         Log.d(TAG, "Created Tile Application")
+
+        initAcra {
+            //core configuration:
+            buildConfigClass = BuildConfig::class.java
+            reportFormat = StringFormat.JSON
+            httpSender {
+                uri = "acra.casperverswijvelt.be"
+                compress = true
+            }
+        }
 
         ExecutorServiceSingleton.getInstance()
 
@@ -58,7 +71,7 @@ class TileApplication : Application() {
                 TAG,
                 "Failed to start foreground service due to an ${e.message}"
             )
-            FirebaseCrashlytics.getInstance().recordException(e)
+            ACRA.errorReporter.handleSilentException(e);
 
             // Not sure what the cause of the 'ForegroundServiceStartNotAllowedException'
             //  is or how to solve it.
